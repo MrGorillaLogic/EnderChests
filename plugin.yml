@@ -1,0 +1,7 @@
+name: EnderChestProtect
+main: com.newliberty.enderchests.EnderChests
+version: 0.1a
+author: [OstlerDev, Henry]
+
+commands:
+  ecp:

@@ -1,20 +1,30 @@
 package com.newliberty.enderchests;
 
 import java.io.*;
+import java.util.List;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.EnderChest;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class EnderChests extends JavaPlugin {
+	static EnderChests plugin;
 	
 	public void onEnable(){
+		this.getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
+		plugin = this;
+		
 		PluginDescriptionFile pdfFile = getDescription();
-		this.getLogger().info(pdfFile.getName() + ", Version "
-				+ pdfFile.getVersion() + ", Has Been Enabled!");
+		this.getLogger().info(pdfFile.getName() + ", Version " + pdfFile.getVersion() + ", Has Been Enabled!");
 	}
 	
 	public void onDisable(){
@@ -34,46 +44,53 @@ public class EnderChests extends JavaPlugin {
 	 * 
 	 * This method saves the enderchest to a yml file called x,y,z.yml
 	 * it should be called when a player exits an ender chest.
+	 * @throws IOException 
 	 */
-	public void saveEnderChest(EnderChest chest, Player p){
-		File f = new File(this.getDataFolder() + "/" + p.getEyeLocation().getBlockX() + "," + p.getEyeLocation().getBlockY() + "," + p.getEyeLocation().getBlockZ());
-		try{
-			//TODO: Test this method!
-			  // Create file 
-			  ObjectOutput out = new ObjectOutputStream(new FileOutputStream(f));
-		      out.writeObject(chest);
-		      out.close();
-			  //Close the output stream
-			  out.close();
-			  }catch (Exception e){//Catch exception if any
-				  this.getLogger().info("[EnderProtect] Failed to save chest at" + p.getEyeLocation().getBlockX() + "," + p.getEyeLocation().getBlockY() + "," + p.getEyeLocation().getBlockZ());
-			  }
-	}
-	
+	public void saveEnderChest(Location loc, Inventory inventory, Player p){
+		File packFile = new File(this.getDataFolder() + "/" + loc.toString() + ".yml");
+		if (!packFile.exists()){
+			packFile.mkdir();
+			try {
+				packFile.createNewFile();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				this.getLogger().info("Failed to create save file...");
+			}
+		}
+		FileConfiguration packConfig = YamlConfiguration.loadConfiguration(packFile);
+
+        packConfig.set("inventory", inventory.getContents());
+        packConfig.set("owner", p.getDisplayName());
+        try {
+            packConfig.save(packFile);
+        } catch (IOException e) {
+            this.getLogger().info("Failed to save inventory...");
+        }
+    }
+
 	/**
 	 * @author OstlerDev
 	 * 
-	 * This method loads the enderchest from a yml file called x,y,z.yml
+	 * @This method loads the enderchest from a yml file called x,y,z.yml
 	 * it should be called when a player opens an ender chest.
 	 * 
 	 * @throws ClassNotFoundException 
 	 */
-	public void loadEnderChest(EnderChest chest, Player p) throws ClassNotFoundException{
-		// Deserialize from a file
-		File f = new File(this.getDataFolder() + "/" + p.getEyeLocation().getBlockX() + "," + p.getEyeLocation().getBlockY() + "," + p.getEyeLocation().getBlockZ());
-	    ObjectInputStream in;
-		try {
-			in = new ObjectInputStream(new FileInputStream(f));
-	    // Deserialize the object
-	    chest = (EnderChest) in.readObject();
-	    in.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+	public Inventory loadEnderChest(Location loc, Inventory inventory, Player p) {
+		Inventory inv = Bukkit.createInventory(p, 27, "ProtectedEnderChest");
+        File packFile = new File(plugin.getDataFolder() + "/" + loc.toString() + ".yml");
+        if (!packFile.exists()){
+        	return inv;
+        }
+        FileConfiguration packConfig = YamlConfiguration.loadConfiguration(packFile);
+
+        List<?> list = packConfig.getList("inventory");
+        if (list != null) {
+            for (int i = 0; i < Math.min(list.size(), inv.getSize()); i += 1) {
+                inv.setItem(i, (ItemStack)list.get(i));
+            }
+        }
+        return inv;
+    }
 
 }
