@@ -17,7 +17,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class EnderChests extends JavaPlugin {
-	static EnderChests plugin;
+	public static EnderChests plugin;
 	
 	public void onEnable(){
 		this.getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
@@ -47,16 +47,7 @@ public class EnderChests extends JavaPlugin {
 	 * @throws IOException 
 	 */
 	public void saveEnderChest(Location loc, Inventory inventory, Player p){
-		File packFile = new File(this.getDataFolder() + "/" + loc.toString() + ".yml");
-		if (!packFile.exists()){
-			packFile.mkdir();
-			try {
-				packFile.createNewFile();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				this.getLogger().info("Failed to create save file...");
-			}
-		}
+		File packFile = getPackFile(loc);
 		FileConfiguration packConfig = YamlConfiguration.loadConfiguration(packFile);
 
         packConfig.set("inventory", inventory.getContents());
@@ -76,21 +67,22 @@ public class EnderChests extends JavaPlugin {
 	 * 
 	 * @throws ClassNotFoundException 
 	 */
-	public Inventory loadEnderChest(Location loc, Inventory inventory, Player p) {
-		Inventory inv = Bukkit.createInventory(p, 27, "ProtectedEnderChest");
-        File packFile = new File(plugin.getDataFolder() + "/" + loc.toString() + ".yml");
-        if (!packFile.exists()){
-        	return inv;
-        }
+	public Inventory loadEnderChest(Location loc, Inventory inventory, Player p){
+		Inventory inv = inventory;
+		File packFile = getPackFile(loc);
+		if (packFile.exists()){
         FileConfiguration packConfig = YamlConfiguration.loadConfiguration(packFile);
-
         List<?> list = packConfig.getList("inventory");
         if (list != null) {
             for (int i = 0; i < Math.min(list.size(), inv.getSize()); i += 1) {
                 inv.setItem(i, (ItemStack)list.get(i));
             }
         }
-        return inv;
     }
+		return inv;
+	}
 
+	public static File getPackFile(Location loc) {
+        return new File(plugin.getDataFolder(), loc.toString() + ".yml"); // TODO: formatting, 0000
+    }
 }
