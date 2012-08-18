@@ -1,7 +1,7 @@
 name: EnderChestProtect
 main: com.newliberty.enderchests.EnderChests
-version: 0.1a
+version: 1.0a
 author: [OstlerDev, Henry]
-
+depends: Factions
 commands:
   ecp:
