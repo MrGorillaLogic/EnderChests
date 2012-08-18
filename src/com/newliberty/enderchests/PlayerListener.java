@@ -121,6 +121,8 @@ public class PlayerListener implements Listener{
 						 return;
 			        }
 				}
+			} else if (plugin.getOwnerName(block.getLocation(), event.getPlayer()).equalsIgnoreCase("null")) {
+				return;
 			}
 			event.getPlayer().sendMessage(ChatColor.RED + "This is not your Protected EnderChest, it belongs to " + ChatColor.GREEN + plugin.getOwnerName(block.getLocation(), event.getPlayer()));
 			event.setCancelled(true);

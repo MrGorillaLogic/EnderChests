@@ -67,7 +67,7 @@ public class EnderChests extends JavaPlugin {
 		FileConfiguration packConfig = YamlConfiguration.loadConfiguration(packFile);
 
         packConfig.set("inventory", inventory.getContents());
-        if (packConfig.get("owner") == null) packConfig.set("owner", p.getDisplayName());
+        if (packConfig.get("owner") == null && !p.hasPermission("nlenderchest.admin")) packConfig.set("owner", p.getDisplayName());
         try {
             packConfig.save(packFile);
         } catch (IOException e) {
