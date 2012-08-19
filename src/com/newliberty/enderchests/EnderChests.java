@@ -4,21 +4,22 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
 
 public class EnderChests extends JavaPlugin {
 	public static EnderChests plugin;
+	public Plugin wgPlugin;
 	public HashMap<String, Integer> playerChestCount = new HashMap<String, Integer>();
 	
 	public void onEnable(){
@@ -26,6 +27,7 @@ public class EnderChests extends JavaPlugin {
 		plugin = this;
 		
 		loadPlayers();
+		dumpPlayers();
 		
 		PluginDescriptionFile pdfFile = getDescription();
 		this.getLogger().info(pdfFile.getName() + ", Version " + pdfFile.getVersion() + ", Has Been Enabled!");
@@ -97,7 +99,7 @@ public class EnderChests extends JavaPlugin {
 		return inv;
 	}
 
-	public static File getPackFile(Location loc) {
+	public File getPackFile(Location loc) {
         return new File(plugin.getDataFolder(), loc.toString() + ".yml"); // TODO: formatting, 0000
     }
 	
@@ -120,6 +122,10 @@ public class EnderChests extends JavaPlugin {
 	
 	public boolean dumpPlayers() {
 		final File file = new File("plugins/EnderChestProtect/playerChestCount.dump");
+		file.mkdirs();
+		if (file.exists()){
+			file.delete();
+		}
 		if (!file.exists()){
 			try {
 				file.createNewFile();
@@ -148,8 +154,10 @@ public class EnderChests extends JavaPlugin {
 
 	public boolean loadPlayers() {
 		final File file = new File("plugins/EnderChestProtect/playerChestCount.dump");
+		playerChestCount = new HashMap<String, Integer>();
 		if (!file.exists()){
 			try {
+				file.mkdir();
 				file.createNewFile();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -170,11 +178,17 @@ public class EnderChests extends JavaPlugin {
 				plugin.playerChestCount.put(p, Integer.parseInt(b));
 			}
 			br.close();
-			file.delete();
+			//file.delete();
 			return true;
 		} catch (final IOException e) {
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	public WorldGuardPlugin getWorldGuard() {
+	    Plugin plugin = getServer().getPluginManager().getPlugin("WorldGuard");
+	 
+	    return (WorldGuardPlugin) plugin;
 	}
 }
