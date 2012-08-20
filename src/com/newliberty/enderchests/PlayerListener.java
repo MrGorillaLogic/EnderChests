@@ -31,6 +31,7 @@ public class PlayerListener implements Listener{
 	Random random = new Random();
 	HashMap<Integer, Location> chestDupe = new HashMap<Integer, Location>();
 	int chestSize = 36;
+	int i = 1;
 	PlayerListener(EnderChests instance){
 		plugin = instance;
 	}
@@ -67,6 +68,7 @@ public class PlayerListener implements Listener{
 				 e.getPlayer().sendMessage(ChatColor.BLUE + "You cannot place Ender Chests!");
 				 e.setCancelled(true);
 			 }
+			e.setCancelled(true);
 		}
 	}
 
@@ -101,7 +103,7 @@ public class PlayerListener implements Listener{
         if (title.startsWith("ProtectedEnderChest")) {
         	String a = title.replace("ProtectedEnderChest ", "");
         	int p = -1;
-        	if (a.length() < 3) {
+        	if (a.length() < 10) {
         		p = Integer.parseInt(a);	
         	}
             Inventory inventory = event.getInventory();
@@ -157,7 +159,7 @@ public class PlayerListener implements Listener{
 	}
 
     public void openPack(Player player, int numSlots, Block b) {
-    	int randomChestNumber = random.nextInt(100);
+    	int randomChestNumber = i++;
         Inventory inventory = Bukkit.createInventory(player, numSlots, "ProtectedEnderChest " + randomChestNumber);
  
         inventory = plugin.loadEnderChest(b.getLocation(), inventory, player);
